@@ -1,9 +1,9 @@
 export class FiniteAutomaton {
     states: Set<string>;
     alphabet: Set<string>;
-    transitions: Map<string, Map<string, string>>; // δ: (state, symbol) -> nextState
-    startState: string; // q0
-    finalStates: Set<string>; // F
+    transitions: Map<string, Map<string, string>>;//δ: (state, symbol) -> nextState
+    startState: string;//q0
+    finalStates: Set<string>;//F
 
     constructor(states: string[], alphabet: string[], transitions: Map<string, Map<string, string>>, startState: string, finalStates: string[]) {
         this.states = new Set(states);

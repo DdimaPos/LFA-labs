@@ -64,14 +64,51 @@ FiniteAutomaton has a primary method called `stringBelongToLanguage` which retur
   2. Check if a transition exists for the currentState and symbol. If not, return false (no valid transition).
   3. Update currentState to the next state according to the transition function.
 
+```typescript
+    for (const symbol of input) {
+        if (!this.alphabet.has(symbol)) return false; //invalid symbol
+        
+        const stateTransitions = this.transitions.get(currentState);
+        if (!stateTransitions || !stateTransitions.has(symbol)) return false; //no valid transition
+        
+        currentState = stateTransitions.get(symbol)!;
+    }
+```
+
 Regular grammar implementation (specifically string generation) relies on random chosing of the production rule recursively, this is why at each run, the output can be different.
 Another method of the `Grammar` class is convertion to `FiniteAutomaton`. First step was creating the parameters for the constructor function and then returning the `FiniteAutomaton` instance.
+
+```typescript
+    //process grammar rules to create FA transitions
+    for (const [left, productions] of this.P.entries()) {
+      for (const production of productions) {
+        if (production.length === 1) {
+          //terminal-only rule (A → b)
+          const terminal = production[0];
+          if (this.VT.has(terminal)) {
+            transitions.get(left)?.set(terminal, finalState); //move to final state
+            finalStates.add(finalState);
+          }
+        } else if (production.length === 2) {
+          //rule of form X → aY
+          const terminal = production[0];
+          const nextState = production[1];
+
+          if (this.VT.has(terminal) && this.VN.has(nextState)) {
+            transitions.get(left)?.set(terminal, nextState);
+          }
+        }
+      }
+    }
+```
 
 For testing I decided to create a few unit tests with valid inputs and invalid inputs to test the finite automaton. The result of the `generateString` function you can see by running the `index.ts` file.
 
 ## Conclusions / Screenshots / Results
 
 It was interesting to understand this topic, because I didn't really understood the difference between the Regular Grammar and Finite Automaton.
+I think that regular grammar and finite automatons will be a very good foundation in developing my own project related to Domain Specific Languages and General Purpose languages
+Typescript was a very good instrument to develop this laboratory work, because it provides a very concise and easy to understand syntax and enhances the basic rules of JavaScript.
 
 ### Regular grammar results 
 

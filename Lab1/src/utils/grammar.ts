@@ -44,8 +44,8 @@ export class Grammar {
   }
 
   public toFiniteAutomaton(): FiniteAutomaton {
-    const states = Array.from(this.VN); //States = Non-terminals
-    const alphabet = Array.from(this.VT); //Alphabet = Terminals
+    const states = Array.from(this.VN);//States = Non-terminals
+    const alphabet = Array.from(this.VT);//Alphabet = Terminals
     const transitions: Map<string, Map<string, string>> = new Map();
     const finalStates: Set<string> = new Set();
 

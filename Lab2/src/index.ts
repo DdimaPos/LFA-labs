@@ -1,23 +1,10 @@
-/**
- * Finite Automaton Implementation in TypeScript
- */
-
 type State = string;
-type InputSymbol = string;  // Renamed from "Symbol" to "InputSymbol" to avoid conflicts
+type InputSymbol = string; 
 
-/**
- * TransitionMap holds, for each state and input symbol,
- * a set of next states.
- */
 interface TransitionMap {
   [state: string]: { [symbol: string]: Set<State> };
 }
 
-/**
- * FiniteAutomaton class represents an automaton (NDFA/DFA)
- * and provides methods for checking determinism, converting
- * to a DFA, and converting to a regular grammar.
- */
 class FiniteAutomaton {
   states: Set<State>;
   alphabet: Set<InputSymbol>;
@@ -38,7 +25,6 @@ class FiniteAutomaton {
     this.finalStates = new Set(finalStates);
     this.transitions = {};
 
-    // Initialize transitions map for each state and symbol.
     for (let state of states) {
       this.transitions[state] = {};
       for (let sym of alphabet) {
@@ -46,7 +32,7 @@ class FiniteAutomaton {
       }
     }
 
-    // Populate transitions based on provided rules.
+    //populate transitions based rules.
     for (let trans of transitions) {
       if (!this.transitions[trans.from]) {
         this.transitions[trans.from] = {};
@@ -58,10 +44,7 @@ class FiniteAutomaton {
     }
   }
 
-  /**
-   * Determines if the automaton is deterministic.
-   * For each state and symbol, there must be at most one transition.
-   */
+  //determines if the automaton is deterministic.
   isDeterministic(): boolean {
     for (let state of this.states) {
       for (let sym of this.alphabet) {
@@ -73,37 +56,30 @@ class FiniteAutomaton {
     return true;
   }
 
-  /**
-   * Converts the NDFA into a DFA using the subset construction algorithm.
-   * Each DFA state is represented as a comma-separated string of NDFA states.
-   */
+  //converts dfa to nfa
   convertToDFA(): FiniteAutomaton {
-    // Hold new DFA states as string keys (each representing a subset of NDFA states).
     let dfaStates = new Set<string>();
     let dfaFinalStates = new Set<string>();
     let dfaTransitions: { from: string; symbol: InputSymbol; to: string }[] = [];
 
-    // Queue for processing subsets
     let queue: string[] = [];
 
-    // Helper function: convert a set of states into a sorted, comma-separated string.
     const stateSetToString = (states: Set<State>): string => {
       return Array.from(states).sort().join(',');
     };
 
-    // Start with the NDFA initial state
+    //NFA initial state
     let startSet = new Set<State>();
     startSet.add(this.initialState);
     let startStateStr = stateSetToString(startSet);
     dfaStates.add(startStateStr);
     queue.push(startStateStr);
 
-    // Process each subset in the queue.
+    //process each subset in the queue.
     while (queue.length > 0) {
       let current = queue.shift()!;
       let currentSet = new Set<State>(current.split(',').filter(s => s));
 
-      // Mark DFA state as final if any NDFA state inside is final.
       for (let state of currentSet) {
         if (this.finalStates.has(state)) {
           dfaFinalStates.add(current);
@@ -120,7 +96,7 @@ class FiniteAutomaton {
           }
         }
         if (nextSet.size === 0) {
-          continue; // No transition exists for this symbol.
+          continue; //no transition for this symbol.
         }
         let nextStateStr = stateSetToString(nextSet);
         dfaTransitions.push({ from: current, symbol: sym, to: nextStateStr });
@@ -131,7 +107,7 @@ class FiniteAutomaton {
       }
     }
 
-    // Construct and return the new DFA as a FiniteAutomaton.
+    //return new DFA as a FiniteAutomaton.
     return new FiniteAutomaton(
       Array.from(dfaStates),
       Array.from(this.alphabet),
@@ -141,11 +117,6 @@ class FiniteAutomaton {
     );
   }
 
-  /**
-   * Converts the automaton into a regular grammar.
-   * For each transition A --a--> B, it creates a production A → aB.
-   * Additionally, for every final state A, it adds a production A → ε.
-   */
   toRegularGrammar(): RegularGrammar {
     let grammar = new RegularGrammar();
     for (let state of this.states) {
@@ -179,11 +150,6 @@ class FiniteAutomaton {
   }
 }
 
-/**
- * RegularGrammar class holds production rules.
- * Productions are stored as a mapping from a non-terminal (state) to
- * an array of production strings.
- */
 class RegularGrammar {
   productions: { [nonTerminal: string]: string[] };
 
@@ -209,7 +175,7 @@ class RegularGrammar {
 }
 
 /**
- * --- Variant Data ---
+ * --- Variant 25 ---
  * Q = {q0, q1, q2, q3},
  * ∑ = {a, b},
  * F = {q2},
@@ -234,21 +200,20 @@ const transitions = [
   { from: "q3", symbol: "a", to: "q1" },
 ];
 
-// Create the NDFA instance using the variant data.
-const ndfa = new FiniteAutomaton(states, alphabet, initialState, finalStates, transitions);
+const nfa = new FiniteAutomaton(states, alphabet, initialState, finalStates, transitions);
 
 console.log("NDFA Transitions:");
-ndfa.printTransitions();
+nfa.printTransitions();
 
-console.log("\nIs the NDFA deterministic?", ndfa.isDeterministic());
+console.log("\nIs the NDFA deterministic?", nfa.isDeterministic());
 
-// Convert NDFA to DFA.
-const dfa = ndfa.convertToDFA();
+//convertion nfa->dfa
+const dfa = nfa.convertToDFA();
 console.log("\nDFA Transitions:");
 dfa.printTransitions();
 console.log("\nDFA Final States:", Array.from(dfa.finalStates));
 
-// Convert the automaton to a Regular Grammar.
-const regularGrammar = ndfa.toRegularGrammar();
+//automaton to a Regular Grammar.
+const regularGrammar = nfa.toRegularGrammar();
 console.log("\nRegular Grammar:");
 console.log(regularGrammar.toString());

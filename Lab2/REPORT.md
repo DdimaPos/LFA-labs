@@ -43,7 +43,7 @@ Please consider that all elements of the task 3 can be done manually, writing a 
 
 The implementation defines a `FiniteAutomaton` class that stores:
 - **States**: Represented as a set of strings.
-- **Alphabet**: Stored as a set of input symbols (renamed from `Symbol` to `InputSymbol` to avoid naming conflicts with built-in types).
+- **Alphabet**: Stored as a set of input symbols.
 - **Initial and Final States**: The initial state is stored as a string while the final states are maintained in a set.
 - **Transitions**: A nested map structure (`TransitionMap`) is used where for every state and symbol, a set of possible next states is maintained.
 
@@ -51,13 +51,13 @@ The implementation defines a `FiniteAutomaton` class that stores:
 
 The method `isDeterministic()` in the `FiniteAutomaton` class iterates over each state and input symbol. It verifies that for every (state, symbol) pair there is at most one destination state. If more than one state is found for any such pair, the automaton is non-deterministic. This is crucial because a deterministic finite automaton (DFA) requires a unique next state for every combination of state and input symbol.
 
-### NDFA to DFA Conversion
+### NFA to DFA Conversion
 
-To convert the NDFA to a DFA, the **subset construction algorithm** is used:
-- **Subset Representation**: Each DFA state is represented as a comma-separated string of NDFA states (e.g., `"q0,q1,q2"`).
+To convert the NFA to a DFA, the **subset construction algorithm** is used:
+- **Subset Representation**: Each DFA state is represented as a comma-separated string of NFA states (e.g., `"q0,q1,q2"`).
 - **Processing Queue**: A queue is used to systematically explore all subsets of NDFA states.
-- **Final States**: A subset is marked as a final state if it contains any NDFA final state.
-- **Transitions**: For every subset and input symbol, the set of reachable NDFA states is computed and then mapped to a new DFA state.
+- **Final States**: A subset is marked as a final state if it contains any NFA final state.
+- **Transitions**: For every subset and input symbol, the set of reachable NFA states is computed and then mapped to a new DFA state.
 
 Here you can see the relevant methods that responds for convertion:
 ```typescript

@@ -44,7 +44,6 @@ class FiniteAutomaton {
     }
   }
 
-  //determines if the automaton is deterministic.
   isDeterministic(): boolean {
     for (let state of this.states) {
       for (let sym of this.alphabet) {
@@ -134,9 +133,6 @@ class FiniteAutomaton {
     return grammar;
   }
 
-  /**
-   * Utility method to print all transitions.
-   */
   printTransitions(): void {
     console.log("Transitions:");
     for (let state of this.states) {

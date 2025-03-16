@@ -27,6 +27,7 @@ const keywords = new Set([
   "Guitar",
   "for",
   "sync",
+  "note"
 ]);
 const hands = new Set(["R", "L"]);
 const notes = new Set([
@@ -46,7 +47,7 @@ const notes = new Set([
   "G",
 ]);
 const units = new Set(["LUFS", "dB"]);
-const symbols = new Set(["{", "}", "(", ")", "=", ";", "<", "+=", ","]);
+const symbols = new Set(["{", "}", "(", ")", "=", ";", "<", "+=", ",", "/"]);
 
 function tokenize(input: string): Token[] {
   const tokens: Token[] = [];
@@ -56,7 +57,7 @@ function tokenize(input: string): Token[] {
     const line = lines[i].trim();
 
     if (line !== "") {
-      const words = line.match(/\w+|\S/g) || [];
+      const words = line.match(/(\+=|[-+*/<>=!]=?|[\w]+|[{}();,])/g) || [];
 
       for (const word of words) {
         if (keywords.has(word)) {
@@ -71,10 +72,9 @@ function tokenize(input: string): Token[] {
           tokens.push({ type: TokenType.SYMBOL, content: word });
         } else if (/^\d+(\.\d+)?$/.test(word)) {
           tokens.push({ type: TokenType.NUMBER, content: word });
-        } else if (/^\d+\/\d+$/.test(word)) {
-          tokens.push({ type: TokenType.FRACTION, content: word });
         } else {
           tokens.push({ type: TokenType.ERROR, content: word });
+          throw new Error(`Uknown token at line ${i+1}: ${word}`)
         }
       }
     }

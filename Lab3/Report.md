@@ -32,6 +32,10 @@ Despite its role as a separate phase in many compiler architectures, lexical ana
 
 Note: Just because too many students were showing me the same idea of lexer for a calculator, I've decided to specify requirements for such case. Try to make it at least a little more complex. Like, being able to pass integers and floats, also to be able to perform trigonometric operations (cos and sin). But it does not mean that you need to do the calculator, you can pick anything interesting you want
 
+## Topic of the language
+
+Topic that I chose is a music definition language. In this language you can call the functions to play the certain sounds, to define loops, play multiple notes in sync.
+
 ## Implementation Description
 
 Lexer implementation will give as an output a data structure which represents an array of tokens. Using JavaScript regular expressions I identified each token and saved it as an object of form
@@ -39,6 +43,35 @@ Lexer implementation will give as an output a data structure which represents an
 ```
 {"token_type":"content"}
 ```
+
+I used typescript to do this because it provides very good instruments for Regular expression handling. For splitting the words in file into separate array of words I used the following query:
+
+```ts
+      const words = line.match(/(\+=|[-+*/<>=!]=?|[\w]+|[{}();,])/g) || [];
+```
+Later all the words are passed over a checker that looks like this:
+```ts
+      for (const word of words) {
+        if (keywords.has(word)) {
+          tokens.push({ type: TokenType.KEYWORD, content: word });
+        } else if (hands.has(word)) {
+          tokens.push({ type: TokenType.HAND, content: word });
+        } else if (notes.has(word)) {
+          tokens.push({ type: TokenType.NOTE, content: word });
+        } else if (units.has(word)) {
+          tokens.push({ type: TokenType.UNIT, content: word });
+        } else if (symbols.has(word)) {
+          tokens.push({ type: TokenType.SYMBOL, content: word });
+        } else if (/^\d+(\.\d+)?$/.test(word)) {
+          tokens.push({ type: TokenType.NUMBER, content: word });
+        } else {
+          tokens.push({ type: TokenType.ERROR, content: word });
+          throw new Error(`Uknown token at line ${i+1}: ${word}`)
+        }
+      }
+```
+The implementation is done using if-else statements, because in TypeScript it does not provide any performance difference.
+If the word matcches one of the defined sets, it is pushed in array. If not, it it throws an error
 
 ### **Core Functionalities**
 
@@ -103,70 +136,7 @@ The lexer will produce:
     "type": "NEWLINE_TOKEN",
     "content": ""
   },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "sync"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "{"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "Piano"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "("
-  },
-  {
-    "type": "HAND_TOKEN",
-    "content": "R"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ","
-  },
-  {
-    "type": "NOTE_TOKEN",
-    "content": "do"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ")"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "Guitar"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "("
-  },
-  {
-    "type": "NOTE_TOKEN",
-    "content": "G"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ")"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "}"
-  }
+  ...  
 ]
 ```
 
@@ -208,98 +178,7 @@ This structured output enables further processing in a compiler or interpreter.
     "type": "KEYWORD_TOKEN",
     "content": "note"
   },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "<"
-  },
-  {
-    "type": "NOTE_TOKEN",
-    "content": "si"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ";"
-  },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "note"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "+="
-  },
-  {
-    "type": "NUMBER_TOKEN",
-    "content": "1"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ")"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "{"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "Piano"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "("
-  },
-  {
-    "type": "HAND_TOKEN",
-    "content": "R"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ","
-  },
-  {
-    "type": "KEYWORD_TOKEN",
-    "content": "note"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ","
-  },
-  {
-    "type": "NUMBER_TOKEN",
-    "content": "1"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "/"
-  },
-  {
-    "type": "NUMBER_TOKEN",
-    "content": "4"
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": ")"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "SYMBOL_TOKEN",
-    "content": "}"
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  },
-  {
-    "type": "NEWLINE_TOKEN",
-    "content": ""
-  }
+  ...
 ]
 ```
 

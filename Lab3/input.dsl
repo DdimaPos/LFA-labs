@@ -1,5 +1,4 @@
 Volume = 13 dB
-hello world
 sync{
   Piano(R, do)
   Guitar(G)

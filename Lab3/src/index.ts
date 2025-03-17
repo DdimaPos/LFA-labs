@@ -9,7 +9,6 @@ enum TokenType {
   HAND = "HAND_TOKEN",
   NOTE = "NOTE_TOKEN",
   ERROR = "ERROR_TOKEN",
-  DURATION = "DURATION_TOKEN",
   NEWLINE = "NEWLINE_TOKEN",
 }
 

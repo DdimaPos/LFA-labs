@@ -54,6 +54,7 @@ class CNFConverter {
     }
 
     this.grammar.P = newProductions;
+    WriteInAFile("removeepsilon.json", this.grammar)
   }
 
   private removeUnitProductions() {
@@ -117,6 +118,7 @@ class CNFConverter {
     }
 
     this.grammar.P = newProductions;
+    WriteInAFile("removeunitprod.json", this.grammar)
   }
 
   private removeNonProductiveSymbols() {
@@ -166,6 +168,7 @@ class CNFConverter {
 
     this.grammar.P = this.grammar.P.filter(([lhs]) => accessible.has(lhs));
     this.grammar.VN = this.grammar.VN.filter((sym) => accessible.has(sym));
+    WriteInAFile("removeinaccessible.json", this.grammar)
   }
 
   private convertToCNF() {
@@ -201,6 +204,7 @@ class CNFConverter {
     }
 
     this.grammar.P = newProductions;
+    WriteInAFile("converted.json", this.grammar)
   }
 
   private getAllSubsets(arr: number[]): number[][] {
@@ -219,34 +223,62 @@ class CNFConverter {
   }
 }
 
-const grammar: Grammar = {
-  VN: ["S", "A", "B", "C", "D"],
+//Variant 25
+//
+// const grammar: Grammar = {
+//   VN: ["S", "A", "B", "C", "D"],
+//   VT: ["a", "b"],
+//   S: "S",
+//   P: [
+//     ["S", ["b", "A"]],
+//     ["S", ["B", "C"]],
+//     ["A", ["a"]],
+//     ["A", ["a", "S"]],
+//     ["A", ["b", "C", "a", "C", "a"]],
+//     ["B", ["A"]],
+//     ["B", ["b", "S"]],
+//     ["B", ["b", "C", "A", "a"]],
+//     ["C", ["ε"]],
+//     ["C", ["A", "B"]],
+//     ["D", ["A", "B"]],
+//   ],
+// };
+//
+//Variant 1
+
+const grammar: Grammar ={
+  VN: ["S", "A", "B", "C", "D", "E"],
   VT: ["a", "b"],
   S: "S",
   P: [
-    ["S", ["b", "A"]],
-    ["S", ["B", "C"]],
-    ["A", ["a"]],
-    ["A", ["a", "S"]],
-    ["A", ["b", "C", "a", "C", "a"]],
-    ["B", ["A"]],
+    ["S", ["a", "B"]],
+    ["S", ["A", "C"]],
+    ["A", ["B"]],
+    ["A", ["b"]],
+    ["A", ["a", "d"]],
+    ["A", ["b"]],
+    ["B", ["b"]],
     ["B", ["b", "S"]],
-    ["B", ["b", "C", "A", "a"]],
     ["C", ["ε"]],
-    ["C", ["A", "B"]],
-    ["D", ["A", "B"]],
+    ["C", ["B", "A"]],
+    ["E", ["a", "B"]],
+    ["D", ["a", "b", "C"]],
   ],
-};
+}
 
 const converter = new CNFConverter(grammar);
 const cnfGrammar = converter.toCNF();
 
 console.log(JSON.stringify(cnfGrammar, null, 1));
 
-fs.writeFile(
-  "mynewfile3.json",
-  JSON.stringify(cnfGrammar, null, 1),
-  function(err) {
-    console.log(err);
-  },
-);
+WriteInAFile("mynewfile.json", cnfGrammar)
+
+function WriteInAFile(fileName: string, obj: any) {
+  fs.writeFile(
+    fileName,
+    JSON.stringify(obj, null, 1),
+    function(err) {
+      console.log(err);
+    },
+  );
+}

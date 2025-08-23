@@ -1,8 +1,6 @@
-// parser.ts
 import {
   Token,
   TokenType,
-  ASTNode,
   ProgramNode,
   StatementNode,
   AssignmentNode,
@@ -11,17 +9,9 @@ import {
   ForLoopNode,
   ExpressionNode,
   IdentifierNode,
-  NumberLiteralNode,
-  NoteLiteralNode,
-  HandLiteralNode,
   UnitNode,
-  FractionLiteralNode,
   BinaryExpressionNode,
   UpdateExpressionNode,
-  keywords as lexerKeywords, //renaming to avoid conflict
-  notes as lexerNotes,
-  hands as lexerHands,
-  units as lexerUnits,
 } from "./ast-nodes.js"; // Assuming ast-nodes.ts is in the same directory
 
 export class Parser {
@@ -29,7 +19,6 @@ export class Parser {
   private current: number = 0;
 
   constructor(tokens: Token[]) {
-    // Filter out newline tokens as they generally don't affect AST structure
     this.tokens = tokens.filter((token) => token.type !== TokenType.NEWLINE);
   }
 
@@ -39,12 +28,11 @@ export class Parser {
       try {
         body.push(this.parseStatement());
       } catch (e) {
-        // Simple error reporting: log and stop, or collect errors
         console.error("Parsing error:", e);
-        // For a more robust parser, you might try error recovery here
-        throw e; // Re-throw to halt on first error
+        throw e;
       }
     }
+
     return { type: "Program", body };
   }
 
@@ -67,10 +55,13 @@ export class Parser {
     return this.previous();
   }
 
-  // Checks if the current token matches the expected type and optional content
+  // checks if the current token matches the expected type
+  // by matching with previous one
   private check(type: TokenType, content?: string): boolean {
     if (this.isAtEnd()) return false;
+
     const token = this.peek();
+
     return (
       token.type === type &&
       (content === undefined || token.content === content)
@@ -110,7 +101,6 @@ export class Parser {
   }
 
   // --- Statement Parsers ---
-
   private parseStatement(): StatementNode {
     const currentToken = this.peek();
 
@@ -127,16 +117,13 @@ export class Parser {
         case "Volume":
         case "Tempo":
         case "TimeSignature":
-        case "note": // 'note' can start an assignment like 'note = do'
-          // Check if it's an assignment (e.g., Volume = 10, note = do)
+        case "note":
           if (
             this.tokens[this.current + 1]?.type === TokenType.SYMBOL &&
             this.tokens[this.current + 1]?.content === "="
           ) {
             return this.parseAssignment();
           }
-          // If 'note' is not followed by '=', it might be an error in this context
-          // or part of another structure not yet defined as a statement start.
           break;
       }
     }
@@ -157,7 +144,7 @@ export class Parser {
 
     this.consume(TokenType.SYMBOL, "Expected '=' for assignment.", "=");
 
-    const valueNode = this.parseExpression(); // Value can be Number, Note, Identifier, Fraction
+    const valueNode = this.parseExpression();
 
     let unitNode: UnitNode | undefined = undefined;
     if (valueNode.type === "NumberLiteral" && this.check(TokenType.UNIT)) {
@@ -233,8 +220,6 @@ export class Parser {
         const right = this.parseExpression(); // e.g., 'si' (NoteLiteral) or a number
         condition = { type: "BinaryExpression", left, operator, right };
       } else {
-        // A single expression could be a condition, but your example `note < si` is binary.
-        // For now, strictly expect binary for clarity from example.
         throw new Error(
           "Expected binary expression (e.g. note < si) for for-loop condition.",
         );
@@ -317,10 +302,6 @@ export class Parser {
   // --- Expression Parsers ---
 
   private parseExpression(): ExpressionNode {
-    // This version doesn't handle complex operator precedence beyond what's needed for fractions or simple binary ops.
-    // For `1/4`, parsePrimaryExpression handles it.
-    // For `note < si`, the for-loop parser explicitly builds BinaryExpression.
-    // If more complex expressions were needed, a Pratt parser or shunting-yard for precedence climbing would be used here.
     return this.parsePrimaryExpression();
   }
 
@@ -330,7 +311,6 @@ export class Parser {
     if (token.type === TokenType.NUMBER) {
       this.advance(); // consume the number token
       // Check for fraction: NUMBER / NUMBER
-      // Your lexer splits "1/4" into: NUMBER(1), SYMBOL(/), NUMBER(4)
       if (
         this.check(TokenType.SYMBOL, "/") &&
         this.tokens[this.current + 1]?.type === TokenType.NUMBER
@@ -365,14 +345,9 @@ export class Parser {
     }
 
     if (token.type === TokenType.KEYWORD && token.content === "note") {
-      // If 'note' is encountered where an expression is expected (e.g., RHS of assignment, function arg, condition part)
-      // it's treated as an identifier (variable).
       this.advance();
       return { type: "Identifier", name: token.content };
     }
-
-    // If other keywords could be used as identifiers in expressions, add them here.
-    // For now, 'note' is the primary one from examples.
 
     throw new Error(
       `Unexpected token for expression: ${token.type} ('${token.content}') at pos ${this.current}.`,
@@ -380,8 +355,7 @@ export class Parser {
   }
 }
 
-// --- Example Usage (Illustrative) ---
-// You would get `tokens` from your lexer.
+// // Example 1
 // const exampleTokens: Token[] = [
 //     { type: TokenType.KEYWORD, content: "Volume" },
 //     { type: TokenType.SYMBOL, content: "=" },
@@ -409,41 +383,45 @@ export class Parser {
 //     console.error("Parser failed:", error.message);
 // }
 
+// Example 2
 const forLoopTokens: Token[] = [
-    {type: TokenType.KEYWORD, content: "for"},
-    {type: TokenType.SYMBOL, content: "("},
-    {type: TokenType.KEYWORD, content: "note"},
-    {type: TokenType.SYMBOL, content: "="},
-    {type: TokenType.NOTE, content: "re"},
-    {type: TokenType.SYMBOL, content: ";"},
-    {type: TokenType.KEYWORD, content: "note"},
-    {type: TokenType.SYMBOL, content: "<"},
-    {type: TokenType.NOTE, content: "si"},
-    {type: TokenType.SYMBOL, content: ";"},
-    {type: TokenType.KEYWORD, content: "note"},
-    {type: TokenType.SYMBOL, content: "+="},
-    {type: TokenType.NUMBER, content: "1"},
-    {type: TokenType.SYMBOL, content: ")"},
-    {type: TokenType.SYMBOL, content: "{"},
-    {type: TokenType.KEYWORD, content: "Piano"},
-    {type: TokenType.SYMBOL, content: "("},
-    {type: TokenType.HAND, content: "R"},
-    {type: TokenType.SYMBOL, content: ","},
-    {type: TokenType.KEYWORD, content: "note"}, // 'note' as a variable argument
-    {type: TokenType.SYMBOL, content: ","},
-    {type: TokenType.NUMBER, content: "1"},   // Start of fraction 1/4
-    {type: TokenType.SYMBOL, content: "/"},
-    {type: TokenType.NUMBER, content: "4"},   // End of fraction
-    {type: TokenType.SYMBOL, content: ")"},
-    {type: TokenType.SYMBOL, content: "}"},
+  { type: TokenType.KEYWORD, content: "for" },
+  { type: TokenType.SYMBOL, content: "(" },
+  { type: TokenType.KEYWORD, content: "note" },
+  { type: TokenType.SYMBOL, content: "=" },
+  { type: TokenType.NOTE, content: "re" },
+  { type: TokenType.SYMBOL, content: ";" },
+  { type: TokenType.KEYWORD, content: "note" },
+  { type: TokenType.SYMBOL, content: "<" },
+  { type: TokenType.NOTE, content: "si" },
+  { type: TokenType.SYMBOL, content: ";" },
+  { type: TokenType.KEYWORD, content: "note" },
+  { type: TokenType.SYMBOL, content: "+=" },
+  { type: TokenType.NUMBER, content: "1" },
+  { type: TokenType.SYMBOL, content: ")" },
+  { type: TokenType.SYMBOL, content: "{" },
+  { type: TokenType.KEYWORD, content: "Piano" },
+  { type: TokenType.SYMBOL, content: "(" },
+  { type: TokenType.HAND, content: "R" },
+  { type: TokenType.SYMBOL, content: "," },
+  { type: TokenType.KEYWORD, content: "note" }, 
+  { type: TokenType.SYMBOL, content: "," },
+  { type: TokenType.NUMBER, content: "1" }, 
+  { type: TokenType.SYMBOL, content: "/" },
+  { type: TokenType.NUMBER, content: "4" }, 
+  { type: TokenType.SYMBOL, content: ")" },
+  { type: TokenType.SYMBOL, content: "}" },
 ];
 const parser2 = new Parser(forLoopTokens);
 try {
-    const ast2 = parser2.parse();
-    console.log(JSON.stringify(ast2, null, 2));
+  const ast2 = parser2.parse();
+  console.log(JSON.stringify(ast2, null, 2));
 } catch (error: any) {
-    console.error("Parser failed for loop:", error.message);
+  console.error("Parser failed for loop:", error.message);
 }
+
+
+// Example 3
 // const tokens: Token[] = [
 //   {
 //     type: TokenType.KEYWORD,
@@ -661,8 +639,8 @@ try {
 //
 // const parser3 = new Parser(tokens);
 // try {
-//     const ast2 = parser3.parse();
-//     console.log(JSON.stringify(ast2, null, 2));
+//   const ast2 = parser3.parse();
+//   console.log(JSON.stringify(ast2, null, 2));
 // } catch (error: any) {
-//     console.error("Parser failed for loop:", error.message);
+//   console.error("Parser failed for loop:", error.message);
 // }

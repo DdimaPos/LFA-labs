@@ -234,8 +234,7 @@ The `parseStatement()` method acts as a dispatcher. It examines the current toke
         case "Volume":
         case "Tempo":
         case "TimeSignature":
-        case "note": // 'note' can start an assignment like 'note = do'
-          // Check if next token is '=' for assignment
+        case "note": 
           if (this.tokens[this.current + 1]?.type === TokenType.SYMBOL &&
               this.tokens[this.current + 1]?.content === "=") {
             return this.parseAssignment();
@@ -431,7 +430,6 @@ Here are some examples of the input code and the generates AST
 Volume = 13 dB
 sync{
   Piano(R, do)
-  Guitar(G)
 }
 ```
 
@@ -471,81 +469,6 @@ sync{
             {
               "type": "NoteLiteral",
               "value": "do"
-            }
-          ]
-        },
-        {
-          "type": "FunctionCall",
-          "functionName": {
-            "type": "Identifier",
-            "name": "Guitar"
-          },
-          "arguments": [
-            {
-              "type": "NoteLiteral",
-              "value": "G"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "ForLoop",
-      "initialization": {
-        "type": "Assignment",
-        "identifier": {
-          "type": "Identifier",
-          "name": "note"
-        },
-        "value": {
-          "type": "NoteLiteral",
-          "value": "re"
-        }
-      },
-      "condition": {
-        "type": "BinaryExpression",
-        "left": {
-          "type": "Identifier",
-          "name": "note"
-        },
-        "operator": "<",
-        "right": {
-          "type": "NoteLiteral",
-          "value": "si"
-        }
-      },
-      "update": {
-        "type": "UpdateExpression",
-        "operator": "+=",
-        "argument": {
-          "type": "Identifier",
-          "name": "note"
-        },
-        "value": {
-          "type": "NumberLiteral",
-          "value": 1
-        }
-      },
-      "body": [
-        {
-          "type": "FunctionCall",
-          "functionName": {
-            "type": "Identifier",
-            "name": "Piano"
-          },
-          "arguments": [
-            {
-              "type": "HandLiteral",
-              "value": "R"
-            },
-            {
-              "type": "Identifier",
-              "name": "note"
-            },
-            {
-              "type": "FractionLiteral",
-              "numerator": 1,
-              "denominator": 4
             }
           ]
         }
